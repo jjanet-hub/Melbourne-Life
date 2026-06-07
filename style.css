@@ -1,0 +1,452 @@
+/* ========== CSS Variables & Global Styles ========== */
+:root {
+  --primary-color: #ff6b6b;
+  --secondary-color: #4ecdc4;
+  --text-dark: #2c3e50;
+  --text-light: #7f8c8d;
+  --bg-light: #f8f9fa;
+  --bg-white: #ffffff;
+  --border-color: #e0e0e0;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --transition: all 0.3s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei',
+    'PingFang SC', 'Noto Sans CJK SC', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  color: var(--text-dark);
+}
+
+/* ========== App Container ========== */
+.app {
+  width: 100%;
+  max-width: 600px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ========== Card Styles ========== */
+.card {
+  background: var(--bg-white);
+  border-radius: 20px;
+  padding: 40px 30px;
+  box-shadow: var(--shadow-md);
+  animation: slideIn 0.5s ease;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.card.hidden {
+  display: none;
+  opacity: 0;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== Start Card ========== */
+.start-card {
+  text-align: center;
+}
+
+.top-icon {
+  font-size: 60px;
+  margin-bottom: 20px;
+  display: inline-block;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--secondary-color);
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 15px;
+}
+
+h1 {
+  font-size: 42px;
+  margin-bottom: 20px;
+  color: var(--text-dark);
+  font-weight: 700;
+}
+
+.intro {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text-light);
+  margin-bottom: 25px;
+}
+
+.note {
+  background: var(--bg-light);
+  border-left: 4px solid var(--secondary-color);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.note p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-light);
+}
+
+/* ========== Quiz Card ========== */
+.quiz-card {
+  min-height: 500px;
+}
+
+.quiz-header {
+  margin-bottom: 30px;
+}
+
+.question-number {
+  font-size: 14px;
+  color: var(--secondary-color);
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: block;
+}
+
+/* ========== Progress Bar ========== */
+.progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--border-color);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* ========== Category & Question ========== */
+.category {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--primary-color);
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: block;
+}
+
+#questionText {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  line-height: 1.6;
+  color: var(--text-dark);
+}
+
+/* ========== Options ========== */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.option-btn {
+  background: var(--bg-light);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 16px 20px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text-dark);
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.option-btn:hover {
+  border-color: var(--secondary-color);
+  background: #f0fffe;
+  transform: translateX(5px);
+}
+
+.option-btn.selected {
+  background: var(--secondary-color);
+  color: white;
+  border-color: var(--secondary-color);
+  font-weight: 600;
+}
+
+.option-btn:active {
+  transform: scale(0.98);
+}
+
+/* ========== Complete Card ========== */
+.complete-card {
+  text-align: center;
+}
+
+#resultBox {
+  width: 100%;
+  height: 200px;
+  padding: 15px;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-dark);
+  background: var(--bg-light);
+  resize: none;
+  margin: 25px 0;
+  word-wrap: break-word;
+  overflow-y: auto;
+}
+
+#resultBox::-webkit-scrollbar {
+  width: 6px;
+}
+
+#resultBox::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#resultBox::-webkit-scrollbar-thumb {
+  background: var(--secondary-color);
+  border-radius: 3px;
+}
+
+/* ========== Buttons ========== */
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, var(--primary-color), #ff5252);
+  color: white;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.primary-btn:active {
+  transform: translateY(0);
+}
+
+.secondary-btn {
+  background: var(--bg-light);
+  color: var(--text-dark);
+  width: 100%;
+  border: 2px solid var(--border-color);
+}
+
+.secondary-btn:hover {
+  background: var(--border-color);
+  border-color: var(--text-light);
+}
+
+.secondary-btn:active {
+  transform: scale(0.98);
+}
+
+#backBtn {
+  margin-top: 20px;
+}
+
+/* ========== Button Container ========== */
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* ========== Responsive Design ========== */
+@media (max-width: 640px) {
+  .card {
+    padding: 30px 20px;
+  }
+
+  h1 {
+    font-size: 32px;
+  }
+
+  #questionText {
+    font-size: 20px;
+  }
+
+  .top-icon {
+    font-size: 50px;
+  }
+
+  .label {
+    font-size: 11px;
+  }
+
+  .intro {
+    font-size: 15px;
+  }
+
+  button {
+    padding: 12px 20px;
+    font-size: 15px;
+  }
+
+  .option-btn {
+    padding: 14px 16px;
+    font-size: 15px;
+  }
+
+  #resultBox {
+    height: 150px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 10px;
+  }
+
+  .card {
+    padding: 25px 16px;
+    border-radius: 16px;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+
+  #questionText {
+    font-size: 18px;
+  }
+
+  .top-icon {
+    font-size: 45px;
+    margin-bottom: 15px;
+  }
+
+  .intro {
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+
+  .note {
+    padding: 12px;
+    margin-bottom: 20px;
+  }
+
+  .note p {
+    font-size: 13px;
+  }
+
+  button {
+    padding: 11px 16px;
+    font-size: 14px;
+  }
+
+  .option-btn {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+
+  #resultBox {
+    height: 120px;
+    font-size: 11px;
+    padding: 12px;
+  }
+}
+
+/* ========== Utility Classes ========== */
+.hidden {
+  display: none !important;
+}
+
+.visible {
+  display: block !important;
+}
+
+/* ========== Animation for Copy Success ========== */
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.pulse {
+  animation: pulse 0.3s ease;
+}
+
+/* ========== Accessibility ========== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--secondary-color);
+  outline-offset: 2px;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--secondary-color);
+  outline-offset: 2px;
+}
