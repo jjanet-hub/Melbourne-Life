@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Melbourne Life</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- For PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- For QR Code generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+
+<body>
+  <main class="app">
+    <!-- Start Page -->
+    <section id="startPage" class="card start-card">
+      <div class="top-icon">🌇</div>
+      <p class="label">OUR LITTLE LIFE ALIGNMENT QUIZ</p>
+      <h1>Melbourne Life</h1>
+      <p class="intro">
+        練習和你一起生活，不只是同住，而是一起把日子過好。
+      </p>
+
+      <div class="note">
+        <p>
+          這不是考試，也不是誰對誰錯。只是想在真正一起生活之前，
+          先聽聽彼此對生活的想像。
+        </p>
+      </div>
+
+      <div class="mode-selector">
+        <button id="startBtn" class="primary-btn">開啟對齊計畫</button>
+        <button id="compareModeBtn" class="secondary-btn">📊 比較模式</button>
+      </div>
+    </section>
+
+    <!-- Quiz Page -->
+    <section id="quizPage" class="card quiz-card hidden">
+      <div class="quiz-header">
+        <p id="questionNumber" class="question-number"></p>
+        <div class="progress-track">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+      </div>
+
+      <p id="category" class="category"></p>
+      <h2 id="questionText"></h2>
+
+      <div id="options" class="options"></div>
+
+      <button id="backBtn" class="secondary-btn">上一題</button>
+    </section>
+
+    <!-- Complete Page -->
+    <section id="completePage" class="card complete-card hidden">
+      <div class="top-icon">💌</div>
+      <h1>你的部分已完成！</h1>
+      <p class="intro">
+        我已經把你的想法整理好了。可以複製結果傳給對方，
+        再一起慢慢聊。
+      </p>
+
+      <textarea id="resultBox" readonly></textarea>
+
+      <div class="button-group">
+        <button id="copyBtn" class="primary-btn">複製結果傳給他</button>
+        <button id="exportPdfBtn" class="secondary-btn">📄 匯出 PDF</button>
+        <button id="generateQrBtn" class="secondary-btn">📱 生成分享碼</button>
+        <button id="restartBtn" class="secondary-btn">重新開始</button>
+      </div>
+
+      <!-- QR Code Modal -->
+      <div id="qrModal" class="modal hidden">
+        <div class="modal-content">
+          <button class="close-btn">&times;</button>
+          <h2>分享你的結果</h2>
+          <p>掃描二維碼或複製鏈接分享給你的伴侶</p>
+          <div id="qrCode" class="qr-container"></div>
+          <input type="text" id="shareLink" class="share-link" readonly />
+          <button id="copyLinkBtn" class="primary-btn">複製鏈接</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Compare Page -->
+    <section id="comparePage" class="card compare-card hidden">
+      <div class="compare-header">
+        <h1>對比分析</h1>
+        <p>輸入你伴侶的回答代碼來比較結果</p>
+      </div>
+
+      <div class="compare-input">
+        <textarea 
+          id="partnerResultBox" 
+          placeholder="貼上伴侶的回答結果或分享碼..."
+          rows="6"
+        ></textarea>
+        <button id="analyzeBtn" class="primary-btn">分析對比</button>
+      </div>
+
+      <div id="comparisonResults" class="comparison-results hidden">
+        <h2>📊 對比結果</h2>
+        
+        <div class="agreement-score">
+          <div class="score-label">整體相容度</div>
+          <div class="score-bar">
+            <div id="scoreBar" class="score-fill"></div>
+          </div>
+          <div id="scoreText" class="score-text">計算中...</div>
+        </div>
+
+        <div class="category-comparison">
+          <h3>各類別對比</h3>
+          <div id="categoryComparison" class="categories-list"></div>
+        </div>
+
+        <div class="discussion-guide">
+          <h3>💬 建議討論話題</h3>
+          <ul id="discussionTopics"></ul>
+        </div>
+
+        <div class="button-group">
+          <button id="exportComparisonBtn" class="primary-btn">📄 匯出對比報告</button>
+          <button id="backToStartBtn" class="secondary-btn">返回開始</button>
+        </div>
+      </div>
+
+      <button id="backToStartBtn2" class="secondary-btn">返回開始</button>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
