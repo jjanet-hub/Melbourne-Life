@@ -24,7 +24,7 @@ const quizData = [
     category: '家務分工',
     question: '你對家務分工的想法是？',
     options: [
-      { text: '各司其職，各��責自己的部分', value: 'division' },
+      { text: '各司其職，各自責任', value: 'division' },
       { text: '輪流負責，公平分配', value: 'rotation' },
       { text: '誰有空誰做，靈活安排', value: 'flexible' },
       { text: '應該有一個人主要負責', value: 'primary' },
@@ -122,19 +122,62 @@ const quizData = [
   },
 ];
 
+// ========== Discussion Topics Database ==========
+const discussionTopicsDb = {
+  '日常作息': [
+    '我們可以一起制定一個互相配合的作息時間表',
+    '討論早起與晚睡的人如何協調生活節奏',
+    '規劃一起運動或放鬆的時間',
+  ],
+  '家務分工': [
+    '列出所有家務，看看各自的擅長和偏好',
+    '建立一個公平的家務輪轉表',
+    '討論對整潔程度的期望和容忍度',
+  ],
+  '溝通風格': [
+    '建立溝通的「暫停」機制，讓彼此都有思考時間',
+    '練習用「我」開頭表達感受而非指責',
+    '定期舉辦「親密時光」來表達對彼此的感謝',
+  ],
+  '財務管理': [
+    '一起制定家庭預算和儲蓄目標',
+    '定義什麼是「大筆消費」需要溝通',
+    '討論各自對金錢的價值觀和習慣',
+  ],
+  '社交活動': [
+    '定期安排和朋友見面的時間',
+    '建立「兩人時光」和「個人時間」的平衡',
+    '邀請彼此的朋友一起參加活動',
+  ],
+  '生活習慣': [
+    '找到舒適的溫度範圍（可能需要分區控制）',
+    '尊重彼此不同的作息習慣',
+    '建立睡前的放鬆儀式',
+  ],
+};
+
 // ========== State Management ==========
 let currentQuestion = 0;
 let answers = {};
 let selectedAnswerValue = null;
+let partnerAnswers = {};
+let isCompareMode = false;
 
 // ========== DOM Elements ==========
 const startPage = document.getElementById('startPage');
 const quizPage = document.getElementById('quizPage');
 const completePage = document.getElementById('completePage');
+const comparePage = document.getElementById('comparePage');
+
 const startBtn = document.getElementById('startBtn');
+const compareModeBtn = document.getElementById('compareModeBtn');
 const backBtn = document.getElementById('backBtn');
 const copyBtn = document.getElementById('copyBtn');
+const exportPdfBtn = document.getElementById('exportPdfBtn');
+const generateQrBtn = document.getElementById('generateQrBtn');
 const restartBtn = document.getElementById('restartBtn');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const exportComparisonBtn = document.getElementById('exportComparisonBtn');
 
 const questionNumber = document.getElementById('questionNumber');
 const progressBar = document.getElementById('progressBar');
@@ -142,12 +185,30 @@ const category = document.getElementById('category');
 const questionText = document.getElementById('questionText');
 const optionsContainer = document.getElementById('options');
 const resultBox = document.getElementById('resultBox');
+const partnerResultBox = document.getElementById('partnerResultBox');
+const qrModal = document.getElementById('qrModal');
+const closeBtn = document.querySelector('.close-btn');
 
 // ========== Event Listeners ==========
 startBtn.addEventListener('click', startQuiz);
+compareModeBtn.addEventListener('click', startCompareMode);
 backBtn.addEventListener('click', previousQuestion);
 copyBtn.addEventListener('click', copyResult);
+exportPdfBtn.addEventListener('click', exportPDF);
+generateQrBtn.addEventListener('click', generateQR);
 restartBtn.addEventListener('click', restartQuiz);
+analyzeBtn.addEventListener('click', analyzeComparison);
+exportComparisonBtn?.addEventListener('click', exportComparison);
+
+const backToStartBtn = document.getElementById('backToStartBtn');
+const backToStartBtn2 = document.getElementById('backToStartBtn2');
+if (backToStartBtn) backToStartBtn.addEventListener('click', goToStart);
+if (backToStartBtn2) backToStartBtn2.addEventListener('click', goToStart);
+
+closeBtn?.addEventListener('click', () => qrModal.classList.add('hidden'));
+qrModal?.addEventListener('click', (e) => {
+  if (e.target === qrModal) qrModal.classList.add('hidden');
+});
 
 // Keyboard navigation
 document.addEventListener('keydown', (e) => {
@@ -175,25 +236,29 @@ document.addEventListener('keydown', (e) => {
 
 // ========== Quiz Functions ==========
 function startQuiz() {
+  isCompareMode = false;
   startPage.classList.add('hidden');
   quizPage.classList.remove('hidden');
   loadLocalProgress();
   renderQuestion();
 }
 
+function startCompareMode() {
+  isCompareMode = true;
+  startPage.classList.add('hidden');
+  comparePage.classList.remove('hidden');
+}
+
 function renderQuestion() {
   const question = quizData[currentQuestion];
 
-  // Update header
   questionNumber.textContent = `問題 ${currentQuestion + 1}/${quizData.length}`;
   const progress = ((currentQuestion + 1) / quizData.length) * 100;
   progressBar.style.width = progress + '%';
 
-  // Update content
   category.textContent = question.category;
   questionText.textContent = question.question;
 
-  // Render options
   optionsContainer.innerHTML = '';
   question.options.forEach((option) => {
     const button = document.createElement('button');
@@ -201,7 +266,6 @@ function renderQuestion() {
     button.textContent = option.text;
     button.setAttribute('data-value', option.value);
 
-    // Restore previous selection
     if (answers[currentQuestion] === option.value) {
       button.classList.add('selected');
       selectedAnswerValue = option.value;
@@ -211,25 +275,20 @@ function renderQuestion() {
     optionsContainer.appendChild(button);
   });
 
-  // Update back button visibility
   backBtn.style.display = currentQuestion === 0 ? 'none' : 'block';
 }
 
 function selectOption(button, value) {
-  // Remove previous selection
   document.querySelectorAll('.option-btn').forEach((btn) => {
     btn.classList.remove('selected');
   });
 
-  // Add selection to clicked button
   button.classList.add('selected');
   selectedAnswerValue = value;
   answers[currentQuestion] = value;
 
-  // Save to localStorage
   saveProgress();
 
-  // Auto-advance to next question after 300ms
   setTimeout(() => {
     nextQuestion();
   }, 300);
@@ -266,7 +325,6 @@ function completeQuiz() {
 function generateResult() {
   let result = '═══ 我的生活期許 ═══\n\n';
 
-  // Group answers by category
   const grouped = {};
   quizData.forEach((q, index) => {
     if (!grouped[q.category]) {
@@ -278,10 +336,10 @@ function generateResult() {
     grouped[q.category].push({
       question: q.question,
       answer: selectedOption ? selectedOption.text : '未回答',
+      value: answerValue,
     });
   });
 
-  // Format result text
   Object.entries(grouped).forEach(([cat, items]) => {
     result += `[${cat}]\n`;
     items.forEach((item) => {
@@ -291,15 +349,87 @@ function generateResult() {
   });
 
   result += `═══ 完成時間 ═══\n${new Date().toLocaleString('zh-Hant-TW')}\n`;
+  result += `\n[分享代碼]\n${encodeResultToCode(answers)}\n`;
 
   resultBox.value = result;
 }
 
+// ========== PDF Export ==========
+function exportPDF() {
+  const element = document.createElement('div');
+  element.innerHTML = `
+    <h1>我的生活期許</h1>
+    <p>生成時間：${new Date().toLocaleString('zh-Hant-TW')}</p>
+    <hr>
+    ${resultBox.value.replace(/\n/g, '<br>')}
+  `;
+
+  const opt = {
+    margin: 10,
+    filename: `Melbourne-Life-${new Date().getTime()}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
+  };
+
+  html2pdf().set(opt).from(element).save();
+
+  exportPdfBtn.textContent = '✓ PDF 已匯出！';
+  setTimeout(() => {
+    exportPdfBtn.textContent = '📄 匯出 PDF';
+  }, 2000);
+}
+
+// ========== Result Encoding ==========
+function encodeResultToCode(answersObj) {
+  // Convert answers to a compact string representation
+  const values = Object.values(answersObj).map(v => v.charAt(0)).join('');
+  return btoa(values).substring(0, 12);
+}
+
+function decodeResultFromCode(code) {
+  try {
+    const decoded = atob(code + '==');
+    return decoded.split('').map((char, i) => {
+      const option = quizData[i]?.options.find(o => o.value.charAt(0) === char);
+      return option?.value || null;
+    });
+  } catch {
+    return null;
+  }
+}
+
+// ========== QR Code Generation ==========
+function generateQR() {
+  const shareLink = `${window.location.origin}${window.location.pathname}?result=${encodeURIComponent(resultBox.value)}`;
+
+  qrModal.classList.remove('hidden');
+
+  // Clear previous QR code
+  document.getElementById('qrCode').innerHTML = '';
+
+  // Generate new QR code
+  new QRCode(document.getElementById('qrCode'), {
+    text: shareLink,
+    width: 200,
+    height: 200,
+    colorDark: '#2c3e50',
+    colorLight: '#ffffff',
+  });
+
+  document.getElementById('shareLink').value = shareLink;
+
+  generateQrBtn.textContent = '✓ 分享碼已生成！';
+  setTimeout(() => {
+    generateQrBtn.textContent = '📱 生成分享碼';
+  }, 2000);
+}
+
+// ========== Copy Functions ==========
 function copyResult() {
   resultBox.select();
   document.execCommand('copy');
 
-  // Visual feedback
   copyBtn.textContent = '✓ 已複製！';
   copyBtn.classList.add('pulse');
 
@@ -307,6 +437,190 @@ function copyResult() {
     copyBtn.textContent = '複製結果傳給他';
     copyBtn.classList.remove('pulse');
   }, 2000);
+}
+
+document.getElementById('copyLinkBtn')?.addEventListener('click', () => {
+  const link = document.getElementById('shareLink');
+  link.select();
+  document.execCommand('copy');
+
+  const btn = document.getElementById('copyLinkBtn');
+  btn.textContent = '✓ 已複製！';
+  setTimeout(() => {
+    btn.textContent = '複製鏈接';
+  }, 2000);
+});
+
+// ========== Compare Mode ==========
+function analyzeComparison() {
+  const partnerText = partnerResultBox.value.trim();
+
+  if (!partnerText) {
+    alert('請貼上伴侶的結果');
+    return;
+  }
+
+  // Parse partner results
+  try {
+    partnerAnswers = parseResultText(partnerText);
+  } catch (error) {
+    alert('無法解析結果，請確保格式正確');
+    return;
+  }
+
+  // Show results
+  const resultsDiv = document.getElementById('comparisonResults');
+  resultsDiv.classList.remove('hidden');
+
+  calculateCompatibility();
+  displayCategoryComparison();
+  displayDiscussionTopics();
+}
+
+function parseResultText(text) {
+  const answers = {};
+  let questionIndex = 0;
+
+  quizData.forEach((q, i) => {
+    // Look for the question in the text
+    const questionMatch = text.match(new RegExp(`Q: ${q.question}.*?A: (.+?)(?=Q:|\\[|$)`, 's'));
+    if (questionMatch) {
+      const answer = questionMatch[1].trim();
+      const matchingOption = q.options.find(opt => opt.text === answer);
+      if (matchingOption) {
+        answers[i] = matchingOption.value;
+      }
+    }
+  });
+
+  return answers;
+}
+
+function calculateCompatibility() {
+  let matches = 0;
+  let total = quizData.length;
+
+  Object.keys(answers).forEach(index => {
+    if (partnerAnswers[index] === answers[index]) {
+      matches++;
+    }
+  });
+
+  const percentage = Math.round((matches / total) * 100);
+  const scoreBar = document.getElementById('scoreBar');
+  const scoreText = document.getElementById('scoreText');
+
+  scoreBar.style.width = percentage + '%';
+  scoreText.textContent = `${percentage}% 相容度`;
+}
+
+function displayCategoryComparison() {
+  const categories = {};
+
+  quizData.forEach((q, i) => {
+    if (!categories[q.category]) {
+      categories[q.category] = { matches: 0, total: 0 };
+    }
+
+    categories[q.category].total++;
+
+    if (answers[i] === partnerAnswers[i]) {
+      categories[q.category].matches++;
+    }
+  });
+
+  const container = document.getElementById('categoryComparison');
+  container.innerHTML = '';
+
+  Object.entries(categories).forEach(([cat, data]) => {
+    const percentage = Math.round((data.matches / data.total) * 100);
+    let matchClass = 'match-high';
+
+    if (percentage < 50) {
+      matchClass = 'match-low';
+    } else if (percentage < 75) {
+      matchClass = 'match-medium';
+    }
+
+    const item = document.createElement('div');
+    item.className = 'category-item';
+    item.innerHTML = `
+      <div class="category-item-name">${cat}</div>
+      <div class="category-item-match">
+        相容度：<span class="${matchClass}">${percentage}%</span> (${data.matches}/${data.total} 題)
+      </div>
+    `;
+
+    container.appendChild(item);
+  });
+}
+
+function displayDiscussionTopics() {
+  const topicsSet = new Set();
+
+  Object.entries(answers).forEach(([index, myAnswer]) => {
+    const partnerAnswer = partnerAnswers[index];
+
+    if (myAnswer !== partnerAnswer) {
+      const category = quizData[index].category;
+      const topics = discussionTopicsDb[category] || [];
+      topics.forEach(t => topicsSet.add(t));
+    }
+  });
+
+  const topicsList = document.getElementById('discussionTopics');
+  topicsList.innerHTML = '';
+
+  if (topicsSet.size === 0) {
+    const li = document.createElement('li');
+    li.textContent = '太棒了！你們在大多數事情上想法一致，繼續保持溝通！';
+    topicsList.appendChild(li);
+  } else {
+    topicsSet.forEach(topic => {
+      const li = document.createElement('li');
+      li.textContent = topic;
+      topicsList.appendChild(li);
+    });
+  }
+}
+
+function exportComparison() {
+  const element = document.createElement('div');
+  element.innerHTML = `
+    <h1>生活對比分析報告</h1>
+    <p>生成時間：${new Date().toLocaleString('zh-Hant-TW')}</p>
+    <hr>
+    ${document.getElementById('comparisonResults').innerHTML}
+  `;
+
+  const opt = {
+    margin: 10,
+    filename: `Melbourne-Life-Comparison-${new Date().getTime()}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
+  };
+
+  html2pdf().set(opt).from(element).save();
+
+  exportComparisonBtn.textContent = '✓ 報告已匯出！';
+  setTimeout(() => {
+    exportComparisonBtn.textContent = '📄 匯出對比報告';
+  }, 2000);
+}
+
+function goToStart() {
+  currentQuestion = 0;
+  answers = {};
+  partnerAnswers = {};
+  selectedAnswerValue = null;
+
+  quizPage.classList.add('hidden');
+  comparePage.classList.add('hidden');
+  completePage.classList.add('hidden');
+  startPage.classList.remove('hidden');
+
+  clearProgress();
 }
 
 function restartQuiz() {
@@ -332,17 +646,22 @@ function saveProgress() {
 function loadLocalProgress() {
   const saved = localStorage.getItem('quizProgress');
   if (saved) {
-    const { currentQuestion: saved_q, answers: saved_a } = JSON.parse(saved);
-    // Only restore if quiz was recently started
     const progress = JSON.parse(saved);
     const lastSaved = new Date(progress.timestamp);
     const now = new Date();
     const minutesAgo = (now - lastSaved) / (1000 * 60);
 
     if (minutesAgo < 1440) {
-      // 24 hours
-      currentQuestion = saved_q;
-      answers = saved_a;
+      if (
+        confirm(
+          `偵測到上次的進度在第 ${progress.currentQuestion + 1} 題。\n是否要繼續？`
+        )
+      ) {
+        currentQuestion = progress.currentQuestion;
+        answers = progress.answers;
+      } else {
+        clearProgress();
+      }
     } else {
       clearProgress();
     }
@@ -353,9 +672,15 @@ function clearProgress() {
   localStorage.removeItem('quizProgress');
 }
 
-// ========== Initialize ==========
+// ========== URL Parameter Handling ==========
 document.addEventListener('DOMContentLoaded', () => {
-  // Check if there's saved progress on page load
+  const params = new URLSearchParams(window.location.search);
+  const resultParam = params.get('result');
+
+  if (resultParam) {
+    partnerResultBox.value = decodeURIComponent(resultParam);
+  }
+
   const saved = localStorage.getItem('quizProgress');
   if (saved) {
     const progress = JSON.parse(saved);
@@ -364,7 +689,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const minutesAgo = (now - lastSaved) / (1000 * 60);
 
     if (minutesAgo < 1440) {
-      // Show option to continue
       if (
         confirm(
           `偵測到上次的進度在第 ${progress.currentQuestion + 1} 題。\n是否要繼續？`
